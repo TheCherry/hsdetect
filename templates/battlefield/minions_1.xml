@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>em1_pm3_hc7.png</filename>
+	<path>/home/dee/Documents/projects/hearthstone/___pub/images/em1_pm3_hc7.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>1920</width>
+		<height>1080</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>minion</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>898</xmin>
+			<ymin>502</ymin>
+			<xmax>1022</xmax>
+			<ymax>680</ymax>
+		</bndbox>
+	</object>
+</annotation>
