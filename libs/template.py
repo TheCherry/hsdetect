@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+
 class Template:
     def __init__(self, image, default_xml):
         self.tree = ET.parse(default_xml)
@@ -21,6 +22,9 @@ class Template:
         pass
 
     def random_crop_img(self):
+        ## get random img from ext_images
+        img = cv2.open(rand_img_path)
+
         pass
 
     def save(self, path):
@@ -29,8 +33,10 @@ class Template:
 def create_battlefield(img, handcards, enemy_minions, player_minions, heropower_enemy, heropower_player):
     t = Template(img, "templates/battlefield/defaults.xml")
     t.add_template_objects("templates/battlefield/handcards_{}.xml".format(handcards))
-    t.add_template_objects("templates/battlefield/minions_{}.xml".format(player_minions))
-    t.add_template_objects("templates/battlefield/minions_{}.xml".format(enemy_minions), y_offset=-185)
+    if(player_minions > 0):
+        t.add_template_objects("templates/battlefield/minions_{}.xml".format(player_minions))
+    if(enemy_minions > 0):
+        t.add_template_objects("templates/battlefield/minions_{}.xml".format(enemy_minions), y_offset=-185)
     if(heropower_enemy):
         t.add_template_objects("templates/battlefield/heropower_enemy.xml")
     if(heropower_player):

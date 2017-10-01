@@ -6,8 +6,8 @@ class LastTurnExporter(EntityTreeExporter):
     last_turn = 0
     player = None
 
-    def __init__(self, packet_tree, last_turn, player_id):
-        self.last_turn = last_turn
+    def __init__(self, packet_tree, ts, player_id):
+        self.ts = ts
         self.player_id = player_id
         super().__init__(packet_tree)
 
@@ -24,13 +24,13 @@ class LastTurnExporter(EntityTreeExporter):
         for packet in block.packets:
             if "tag" in packet.__dict__ and type(packet.tag) is not int and packet.tag == GameTag.TURN:
                 if(self.last_player == "Player"):
-                    if(packet.ts >= self.last_turn):
-                        self.last_turn = packet.ts
-                        self.player = self.last_player
-                        self.player_minions = len(self.get_board(self.player_id))
-                        self.enemy_minions = len(self.get_board(self.enemy_id))
-                        self.hand_cards = self.get_amount_handcards(self.player_id)
-                        return self
+                    self.ts = packet.ts
+                    self.player = self.last_player
+                    self.player_minions = len(self.get_board(self.player_id))
+                    self.enemy_minions = len(self.get_board(self.enemy_id))
+                    self.hand_cards = self.get_amount_handcards(self.player_id)
+                    self.player_power = self.get_heropower_active(self.player_id)
+                    self.enemy_power = self.get_heropower_active(self.enemy_id)
         return self
 
     def get_board(self, player_id):
@@ -41,3 +41,8 @@ class LastTurnExporter(EntityTreeExporter):
     def get_amount_handcards(self, player_id):
         return len([e for e in self.game.entities if(e.zone == Zone.HAND
                                              and e.controller.player_id == player_id)])
+
+    def get_heropower_active(self, player_id):
+        for e in self.game.entities:
+            if(e.zone == Zone.PLAY and e.type == CardType.HERO_POWER and e.controller == player_id):
+                return True if GameTag.EXHAUSTED not in e.tags or e.tags[GameTag.EXHAUSTED] == 0 else False

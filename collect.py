@@ -1,16 +1,20 @@
+from os import path
+import datetime
+import re
 from enum import Enum
 import tailer
-from os import path
-from libs import screen
-import re
 
-import datetime
 from hslog import LogParser
 from hslog.export import FriendlyPlayerExporter
 from libs.hslog_exporters import LastTurnExporter
 
 from _thread import start_new_thread
 from threading import Lock
+
+from libs import screen
+from libs.template import create_battlefield
+import subprocess
+
 
 class Position(Enum):
     FATAL_ERROR = -1
@@ -23,6 +27,7 @@ class Position(Enum):
     PACKOPENING = 5
     GAMEPLAY = 6
     ARENA = 7
+    TOURNAMENT = 8
 
 class Game:
     position = Position.UNKNOWN
@@ -34,6 +39,7 @@ class Game:
         self.path = log_path
         self.collector = BaseCollector()
         self.lock = Lock()
+        self.p = None
 
 
     def get_position(self, lines):
@@ -53,13 +59,19 @@ class Game:
         else:
             self.collector = BaseCollector()
 
+    def show_img(self, path):
+        if(self.p):
+            self.p.terminate()
+            self.p.wait()
+        self.p = subprocess.Popen(["python3", "labelImg/labelImg.py", path])
+
     def run(self):
         ## get current position
         with open(path.join(self.path, "LoadingScreen.log")) as f:
             if self.get_position(f.readlines()):
                 self.set_collector()
 
-        start_new_thread(self._run, ())
+        start_new_thread(self.run_collector, ())
 
         # watch file
         for line in tailer.follow(open(path.join(self.path, "LoadingScreen.log"))):
@@ -68,7 +80,7 @@ class Game:
                 self.set_collector()
                 self.lock.release()
 
-    def _run(self):
+    def run_collector(self):
         while(True):
             self.lock.acquire()
             self.collector.run()
@@ -86,9 +98,11 @@ class ArenaCollector(BaseCollector):
 
 class BattlefieldCollector(BaseCollector):
     def __init__(self, game):
+        self.game = game
         self.path = path.join(game.path, "Power.log")
         print(game.path)
-        self.last_turn = datetime.time(0)
+        self.last_ts = datetime.time(0)
+        self.last_turn = None
         self.parser = LogParser()
         self.last_img = None
 
@@ -98,19 +112,20 @@ class BattlefieldCollector(BaseCollector):
             self.parser.flush()
             tps = self.parser.games
             fp_id = FriendlyPlayerExporter(tps[-1]).export()
-            ex = LastTurnExporter(tps[-1], self.last_turn, fp_id).export()
-            if(ex.last_turn > self.last_turn and ex.player):
-                if(self.last_turn > datetime.time(0)):
-
-                    ## GET MINIONS / HAND_CARDS / HERO_POWERS
-                    print("EMinions {}  - PMinions {}  - HandCards {}".format(ex.enemy_minions, ex.player_minions, ex.hand_cards))
-                    ### build xml
-
-                    # self.last_img.add_random_img_with_xml(xml)
-
-                    screen.save(self.last_img, "images/em{}_pm{}_hc{}.png".format(ex.enemy_minions, ex.player_minions, ex.hand_cards))
-                    print("{} > TURN".format(ex.player))
-                self.last_turn = ex.last_turn
+            turn = LastTurnExporter(tps[-1], self.last_ts, fp_id).export()
+            if not self.last_turn:
+                self.last_turn = turn
+            if(turn.ts > self.last_turn.ts and turn.player):
+                ## GET MINIONS / HAND_CARDS / HERO_POWERS
+                print("EMinions {}  - PMinions {}  - HandCards {}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                ### build xml
+                create_battlefield(self.last_img, turn.hand_cards, turn.enemy_minions, turn.player_minions, turn.enemy_power, turn.player_power)
+                # self.last_img.add_random_img_with_xml(xml)
+                screen.save(self.last_img, "test.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                # screen.save(self.last_img, "images/em{}_pm{}_hc{}.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                print("{} > TURN".format(turn.player))
+                self.game.show_img("test.png")
+                self.last_turn = turn
             self.last_img = screen.shot()
 
 
