@@ -3,20 +3,22 @@ import datetime
 import re
 import time
 from enum import Enum
+import subprocess
+import signal
+
+from _thread import start_new_thread
+from threading import Lock
 
 import tailer
+from system_hotkey import SystemHotkey
 
 from hslog import LogParser
 from hslog.export import FriendlyPlayerExporter
 from libs.hslog_exporters import LastTurnExporter
 
-from _thread import start_new_thread
-from threading import Lock
 
 from libs import screen
 from libs.template import create_battlefield
-import subprocess
-
 
 class Position(Enum):
     FATAL_ERROR = -1
@@ -42,6 +44,19 @@ class Game:
         self.collector = BaseCollector()
         self.lock = Lock()
         self.p = None
+        self.running = True
+        self.hk = SystemHotkeys()
+        self.hk.register(('control', 'alt', 'z'), callback=self.delete_last_img)
+        self.images = []
+
+    def delete_last_img(self):
+        if self.images:
+            os.rm(self.images[-1])
+            if self.p:
+                self.p.terminate()
+                self.p.wait()
+            if self.images and self.images[-1]:
+                self.p = subprocess.Popen(["python3", "labelImg/labelImg.py", path])
 
 
     def get_position(self, lines):
@@ -62,6 +77,9 @@ class Game:
             self.collector = BaseCollector()
 
     def show_img(self, path):
+        self.images.append(path)
+        if(len(self.images) >= 5):
+            self.images.remove(self.images[0])
         if(self.p):
             self.p.terminate()
             self.p.wait()
@@ -82,25 +100,61 @@ class Game:
                 self.set_collector()
                 self.lock.release()
 
+    def terminate(self, signal, frame):
+        self.lock.acquire()
+        self.running = False
+        self.p.terminate()
+        self.p.wait()
+        self.lock.release()
+        if self.p:
+            self.p.terminate()
+            self.p.wait()
+        exit()
+
+
     def run_collector(self):
-        while(True):
+        while(self.running):
             self.lock.acquire()
             self.collector.run()
             self.lock.release()
 
 
 class BaseCollector:
-    def __init__(self):
-        pass
+    def __init__(self, game):
+        self.game = game
     def run(self):
         pass
+
+class CollectionCollertor(BaseCollector):
+    def __init__(self, game):
+        super().__init__(game)
+        game.hk.register(('controll', 'alt', 'g'), callback=self.start)
+        game.hk.register(('controll', 'alt', 's'), callback=self.stop)
+        print("CollectionCollertor: Start process with ctrl+alt+g")
+        print("CollectionCollertor: Stop process with ctrl+alt+s")
+
+    def start(self):
+        print("Start CollectionCollertor ...")
+        self.running = True
+
+    def stop(self):
+        print("Stop CollectionCollertor ...")
+        self.running = False
+
+    def run(self):
+        if(self.running):
+            print("running ...")
+            ## take sc
+            ## build xml
+            ## click next
+
 
 class ArenaCollector(BaseCollector):
     pass
 
 class BattlefieldCollector(BaseCollector):
     def __init__(self, game):
-        self.game = game
+        super().__init__(game)
         self.path = path.join(game.path, "Power.log")
         print(game.path)
         self.last_ts = datetime.time(0)
@@ -118,19 +172,21 @@ class BattlefieldCollector(BaseCollector):
                 self.last_turn = turn
             if(turn.ts > self.last_turn.ts and turn.player):
                 ## GET MINIONS / HAND_CARDS / HERO_POWERS
-                time.sleep(1)
+                time.sleep(1.2)
                 img = screen.shot()
                 print("EMinions {}  - PMinions {}  - HandCards {}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
-                img_name = "images/em{}_pm{}_hc{}.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards)
-                ### build xml
+                base_name = "images/em{}_pm{}_hc{}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards)
+                img_name = base_name + ".png"
+                xml_name = base_name + ".png"
+
                 temp = create_battlefield(img, turn.hand_cards, turn.enemy_minions, turn.player_minions, turn.enemy_power, turn.player_power)
-                temp.save("images/em{}_pm{}_hc{}.xml".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
-                # self.last_img.add_random_img_with_xml(xml)
-                # screen.save(self.last_img, "test.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                temp.save(xml_name)
+
                 screen.save(img, img_name)
-                print("{} > TURN".format(turn.player))
                 self.game.show_img(img_name)
                 self.last_turn = turn
 
 
-Game("/home/dee/.PlayOnLinux/wineprefix/hs/drive_c/Program Files/Hearthstone/Logs/").run()
+game = Game("/home/dee/.PlayOnLinux/wineprefix/hs/drive_c/Program Files/Hearthstone/Logs/")
+signal.signal(signal.SIGINT, game.terminate)
+game.run()

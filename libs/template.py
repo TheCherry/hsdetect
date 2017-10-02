@@ -13,7 +13,6 @@ class Template:
         y_offset = kargs["y_offset"] if("y_offset" in kargs) else 0
 
         for _object in root.findall('./object'):
-            print(_object.find('name').text)
             for bndbox in _object.findall('bndbox'):
                 bndbox.find('ymin').text = str(int(bndbox.find('ymin').text)+y_offset)
                 bndbox.find('ymax').text = str(int(bndbox.find('ymax').text)+y_offset)
