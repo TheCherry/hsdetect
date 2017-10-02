@@ -17,7 +17,7 @@ class Template:
             for bndbox in _object.findall('bndbox'):
                 bndbox.find('ymin').text = str(int(bndbox.find('ymin').text)+y_offset)
                 bndbox.find('ymax').text = str(int(bndbox.find('ymax').text)+y_offset)
-            self.root.insert(7, _object)
+            self.root.insert(-1, _object)
 
         pass
 
@@ -32,13 +32,17 @@ class Template:
 
 def create_battlefield(img, handcards, enemy_minions, player_minions, heropower_enemy, heropower_player):
     t = Template(img, "templates/battlefield/defaults.xml")
-    t.add_template_objects("templates/battlefield/handcards_{}.xml".format(handcards))
+    if(handcards > 0):
+        t.add_template_objects("templates/battlefield/handcards_{}.xml".format(handcards))
     if(player_minions > 0):
         t.add_template_objects("templates/battlefield/minions_{}.xml".format(player_minions))
     if(enemy_minions > 0):
         t.add_template_objects("templates/battlefield/minions_{}.xml".format(enemy_minions), y_offset=-185)
+
+    print(heropower_enemy)
+    print(heropower_player)
     if(heropower_enemy):
         t.add_template_objects("templates/battlefield/heropower_enemy.xml")
     if(heropower_player):
         t.add_template_objects("templates/battlefield/heropower_player.xml")
-    t.save("test.xml")
+    return t

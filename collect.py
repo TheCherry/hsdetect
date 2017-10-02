@@ -1,7 +1,9 @@
 from os import path
 import datetime
 import re
+import time
 from enum import Enum
+
 import tailer
 
 from hslog import LogParser
@@ -104,7 +106,6 @@ class BattlefieldCollector(BaseCollector):
         self.last_ts = datetime.time(0)
         self.last_turn = None
         self.parser = LogParser()
-        self.last_img = None
 
     def run(self):
         with open(self.path) as f:
@@ -117,16 +118,19 @@ class BattlefieldCollector(BaseCollector):
                 self.last_turn = turn
             if(turn.ts > self.last_turn.ts and turn.player):
                 ## GET MINIONS / HAND_CARDS / HERO_POWERS
+                time.sleep(1)
+                img = screen.shot()
                 print("EMinions {}  - PMinions {}  - HandCards {}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                img_name = "images/em{}_pm{}_hc{}.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards)
                 ### build xml
-                create_battlefield(self.last_img, turn.hand_cards, turn.enemy_minions, turn.player_minions, turn.enemy_power, turn.player_power)
+                temp = create_battlefield(img, turn.hand_cards, turn.enemy_minions, turn.player_minions, turn.enemy_power, turn.player_power)
+                temp.save("images/em{}_pm{}_hc{}.xml".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
                 # self.last_img.add_random_img_with_xml(xml)
-                screen.save(self.last_img, "test.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
-                # screen.save(self.last_img, "images/em{}_pm{}_hc{}.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                # screen.save(self.last_img, "test.png".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
+                screen.save(img, img_name)
                 print("{} > TURN".format(turn.player))
-                self.game.show_img("test.png")
+                self.game.show_img(img_name)
                 self.last_turn = turn
-            self.last_img = screen.shot()
 
 
 Game("/home/dee/.PlayOnLinux/wineprefix/hs/drive_c/Program Files/Hearthstone/Logs/").run()

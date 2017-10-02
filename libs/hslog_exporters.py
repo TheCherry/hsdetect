@@ -30,8 +30,7 @@ class LastTurnExporter(EntityTreeExporter):
                     self.enemy_minions = len(self.get_board(self.enemy_id))
                     self.hand_cards = self.get_amount_handcards(self.player_id)
                     self.player_power = self.get_heropower_active(self.player_id)
-                    self.enemy_power = self.get_heropower_active(self.enemy_id)
-        return self
+                    self.enemy_power = True #self.get_heropower_active(self.enemy_id)
 
     def get_board(self, player_id):
         return [e for e in self.game.entities if(e.zone == Zone.PLAY and
@@ -44,5 +43,5 @@ class LastTurnExporter(EntityTreeExporter):
 
     def get_heropower_active(self, player_id):
         for e in self.game.entities:
-            if(e.zone == Zone.PLAY and e.type == CardType.HERO_POWER and e.controller == player_id):
+            if(e.zone == Zone.PLAY and e.type == CardType.HERO_POWER and e.controller.player_id == player_id):
                 return True if GameTag.EXHAUSTED not in e.tags or e.tags[GameTag.EXHAUSTED] == 0 else False
