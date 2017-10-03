@@ -5,7 +5,7 @@
 **Linux only tested !**
 
 # Description
-This is a tool set to collect Hearthstone data and feed with this the [Tensorflow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection).
+This is a tool to collect Hearthstone data and feed with this the [Tensorflow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection).
 
 # Getting starting
 Set game to fullscreen 1920x1080
