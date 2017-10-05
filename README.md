@@ -8,12 +8,32 @@
 This is a tool to collect Hearthstone data and feed with this the [Tensorflow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection).
 
 # Getting starting
-Set game to fullscreen 1920x1080
 
-```python3 collect.py ```
+## Collector
+The collector will collect images with labels while playing, complete automatic.
+Its collect the battlefield, arena draft and the collection.
+
+Set game to fullscreen 1920x1080 and start the collector:
+
+```python3 collect.py```
 
 After the collector got a new labeled image, the labelImg application starts and shows you the result.
 You can edit the labels and save, press **ctrl+alt+z** to delete it or just keep playing if the result is fine.
+
+### Battlefield
+The collector gather the images after every own turn.
+
+### === NOT YET IMPLEMENTED: ===
+### Arena
+The collector gather the images after every card pick.
+
+### Collection
+The collector don't start automatic, you have to start the process with **ctrl+alt+g** if you want to stop it press **ctrl+alt+s**.
+It's recommended that you set the view of collection to **wild cards**, **crafting** and **Include Uncraftable Cards** like this:
+![collection_example](docs/collection.png)
+
+# Known Bugs
+* Gather the battlefield vs the Innkeeper is to late.
 
 # License
 MIT License
