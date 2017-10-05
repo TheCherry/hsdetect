@@ -34,7 +34,7 @@ The collector gather the images after every card pick.
 
 
 # Known Bugs
-* Gather the battlefield vs the Innkeeper is to late.
+* Gather images from the battlefield vs the Innkeeper is to late, the intern A.I. plays the cards directly after the turn. That result into wrong labeled images.
 
 # License
 MIT License
