@@ -36,10 +36,7 @@ def create_battlefield(img, handcards, enemy_minions, player_minions, heropower_
     if(player_minions > 0):
         t.add_template_objects("templates/battlefield/minions_{}.xml".format(player_minions))
     if(enemy_minions > 0):
-        t.add_template_objects("templates/battlefield/minions_{}.xml".format(enemy_minions), y_offset=-185)
-
-    print(heropower_enemy)
-    print(heropower_player)
+        t.add_template_objects("templates/battlefield/minions_{}.xml".format(enemy_minions), y_offset=-185)        
     if(heropower_enemy):
         t.add_template_objects("templates/battlefield/heropower_enemy.xml")
     if(heropower_player):

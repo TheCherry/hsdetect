@@ -183,9 +183,9 @@ class BattlefieldCollector(BaseCollector):
 
                 base_name = "em{}_pm{}_hc{}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards)
 
-                count = len([f for f in listdir("images") if isfile(join("images", f)) and base_name in f])
-                if(count > 3):
-                    count = 3
+                count = len([f for f in listdir("images") if isfile(join("images", f)) and base_name in f and ".png" in f])
+                if(count > 2):
+                    count = 2
                 base_name = "images/{}_{}".format(count, base_name)
 
                 img_name = base_name + ".png"
