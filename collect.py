@@ -19,6 +19,7 @@ from hslog import LogParser
 from hslog.export import FriendlyPlayerExporter
 from libs.hslog_exporters import LastTurnExporter
 
+from random import randrange
 
 from libs import screen
 from libs.template import create_battlefield
@@ -185,7 +186,7 @@ class BattlefieldCollector(BaseCollector):
 
                 count = len([f for f in listdir("images") if isfile(join("images", f)) and base_name in f and ".png" in f])
                 if(count > 2):
-                    count = 2
+                    count = randrange(0, 2)
                 base_name = "images/{}_{}".format(count, base_name)
 
                 img_name = base_name + ".png"
