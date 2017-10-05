@@ -3,7 +3,7 @@ import mss
 s = mss.mss()
 
 def shot():
-    img = s.grab(s.monitors[1])
+    img = s.grab(s.monitors[2])
     return img
 
 def save(img, path):

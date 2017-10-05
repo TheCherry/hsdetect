@@ -1,4 +1,7 @@
+import os
 from os import path
+from os import listdir
+from os.path import join, isfile
 import datetime
 import re
 import time
@@ -41,22 +44,24 @@ class Game:
     def __init__(self, log_path):
         self.thread = None
         self.path = log_path
-        self.collector = BaseCollector()
+        self.collector = BaseCollector(self)
         self.lock = Lock()
         self.p = None
         self.running = True
-        self.hk = SystemHotkeys()
+        self.hk = SystemHotkey()
         self.hk.register(('control', 'alt', 'z'), callback=self.delete_last_img)
         self.images = []
 
-    def delete_last_img(self):
+    def delete_last_img(self, evnt):
         if self.images:
-            os.rm(self.images[-1])
+            os.remove(self.images[-1])
+            os.remove(self.images[-1].replace(".png", ".xml"))
             if self.p:
                 self.p.terminate()
                 self.p.wait()
+            self.images.pop(-1)
             if self.images and self.images[-1]:
-                self.p = subprocess.Popen(["python3", "labelImg/labelImg.py", path])
+                self.p = subprocess.Popen(["python3", "labelImg/labelImg.py", self.images[-1]])
 
 
     def get_position(self, lines):
@@ -74,7 +79,7 @@ class Game:
         elif(self.position is Position.GAMEPLAY):
             self.collector = BattlefieldCollector(self)
         else:
-            self.collector = BaseCollector()
+            self.collector = BaseCollector(self)
 
     def show_img(self, path):
         self.images.append(path)
@@ -175,9 +180,16 @@ class BattlefieldCollector(BaseCollector):
                 time.sleep(1.2)
                 img = screen.shot()
                 print("EMinions {}  - PMinions {}  - HandCards {}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards))
-                base_name = "images/em{}_pm{}_hc{}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards)
+
+                base_name = "em{}_pm{}_hc{}".format(turn.enemy_minions, turn.player_minions, turn.hand_cards)
+
+                count = len([f for f in listdir("images") if isfile(join("images", f)) and base_name in f])
+                if(count > 3):
+                    count = 3
+                base_name = "images/{}_{}".format(count, base_name)
+
                 img_name = base_name + ".png"
-                xml_name = base_name + ".png"
+                xml_name = base_name + ".xml"
 
                 temp = create_battlefield(img, turn.hand_cards, turn.enemy_minions, turn.player_minions, turn.enemy_power, turn.player_power)
                 temp.save(xml_name)
@@ -188,5 +200,5 @@ class BattlefieldCollector(BaseCollector):
 
 
 game = Game("/home/dee/.PlayOnLinux/wineprefix/hs/drive_c/Program Files/Hearthstone/Logs/")
-signal.signal(signal.SIGINT, game.terminate)
+# signal.signal(signal.SIGINT, game.terminate)
 game.run()

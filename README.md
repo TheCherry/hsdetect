@@ -12,6 +12,9 @@ Set game to fullscreen 1920x1080
 
 ```python3 collect.py ```
 
+After the collector got a new labeled image, the labelImg application starts and shows you the result.
+You can edit the labels and save, press **ctrl+alt+z** to delete it or just keep playing if the result is fine.
+
 # License
 MIT License
 
