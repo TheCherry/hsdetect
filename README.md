@@ -30,7 +30,7 @@ The collector gather the images after every card pick.
 ### Collection
 The collector don't start automatic, you have to start the process with **ctrl+alt+g** if you want to stop it press **ctrl+alt+s**.
 It's recommended that you set the view of collection to **wild cards**, **crafting** and **Include Uncraftable Cards** like this:
-![collection_example](https://github.com/TheCherry/hsdetect/docs/collection.png)
+![collection_example](https://github.com/TheCherry/hsdetect/raw/master/docs/collection.png)
 
 # Known Bugs
 * Gather the battlefield vs the Innkeeper is to late.
