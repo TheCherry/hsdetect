@@ -23,14 +23,15 @@ You can edit the labels and save, press **ctrl+alt+z** to delete it or just keep
 ### Battlefield
 The collector gather the images after every own turn.
 
-### === NOT YET IMPLEMENTED: ===
-### Arena
-The collector gather the images after every card pick.
-
-### Collection
+### Collection (Not yet finish!)
 The collector don't start automatic, you have to start the process with **ctrl+alt+g** if you want to stop it press **ctrl+alt+s**.
 It's recommended that you set the view of collection to **wild cards**, **crafting** and **Include Uncraftable Cards** like this:
 ![collection_example](https://github.com/TheCherry/hsdetect/raw/master/docs/collection.png)
+
+
+### Arena (Not yet implemented!)
+The collector gather the images after every card pick.
+
 
 # Known Bugs
 * Gather the battlefield vs the Innkeeper is to late.

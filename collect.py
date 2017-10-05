@@ -8,12 +8,14 @@ import time
 from enum import Enum
 import subprocess
 import signal
+import numpy as np
 
 from _thread import start_new_thread
 from threading import Lock
 
 import tailer
 from system_hotkey import SystemHotkey
+import pyautogui
 
 from hslog import LogParser
 from hslog.export import FriendlyPlayerExporter
@@ -79,6 +81,8 @@ class Game:
             self.collector = ArenaCollector(self)
         elif(self.position is Position.GAMEPLAY):
             self.collector = BattlefieldCollector(self)
+        elif(self.position is Position.COLLECTIONMANAGER):
+            self.collector = CollectionCollertor(self)
         else:
             self.collector = BaseCollector(self)
 
@@ -134,23 +138,35 @@ class BaseCollector:
 class CollectionCollertor(BaseCollector):
     def __init__(self, game):
         super().__init__(game)
-        game.hk.register(('controll', 'alt', 'g'), callback=self.start)
-        game.hk.register(('controll', 'alt', 's'), callback=self.stop)
+        game.hk.register(('control', 'alt', 'g'), callback=self.start)
+        game.hk.register(('control', 'alt', 's'), callback=self.stop)
         print("CollectionCollertor: Start process with ctrl+alt+g")
         print("CollectionCollertor: Stop process with ctrl+alt+s")
+        self.last_img = None
+        self.idx = 0
+        self.running = False
 
-    def start(self):
+    def start(self, evnt):
+        self.idx = 0
         print("Start CollectionCollertor ...")
         self.running = True
 
-    def stop(self):
+    def stop(self, evnt):
         print("Stop CollectionCollertor ...")
         self.running = False
 
     def run(self):
         if(self.running):
-            print("running ...")
-            ## take sc
+            img = screen.shot()
+            if(self.last_img and screen.simple_compare(np.array(img), np.array(self.last_img))):
+                self.running = False
+                print("Finish!")
+            else:
+                self.last_img = img
+                screen.save(img, "images/collection_{}.png".format(self.idx))
+                self.idx += 1
+                pyautogui.click(1223, 521)
+                time.sleep(1.2)
             ## build xml
             ## click next
 
